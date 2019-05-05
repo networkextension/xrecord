@@ -19,7 +19,7 @@ var finished : Bool = false
 
 override init() {
     self.session = AVCaptureSession()
-    self.session.sessionPreset = AVCaptureSessionPresetHigh
+    self.session.sessionPreset = AVCaptureSession.Preset(rawValue: convertFromAVCaptureSessionPreset(AVCaptureSession.Preset.high))
 
     // Enable screen capture devices in AV Foundation
     xRecord_Bridge.enableScreenCaptureDevices()
@@ -37,13 +37,13 @@ func listDevices() {
   
 func setQuality(_ quality: String!) {
   if (quality == "low") {
-    self.session.sessionPreset = AVCaptureSessionPresetLow;
+    self.session.sessionPreset = AVCaptureSession.Preset(rawValue: convertFromAVCaptureSessionPreset(AVCaptureSession.Preset.low));
   } else if (quality == "medium") {
-    self.session.sessionPreset = AVCaptureSessionPresetMedium;
+    self.session.sessionPreset = AVCaptureSession.Preset(rawValue: convertFromAVCaptureSessionPreset(AVCaptureSession.Preset.medium));
   } else if (quality == "high") {
-    self.session.sessionPreset = AVCaptureSessionPresetHigh;
+    self.session.sessionPreset = AVCaptureSession.Preset(rawValue: convertFromAVCaptureSessionPreset(AVCaptureSession.Preset.high));
   } else if (quality == "photo") {
-    self.session.sessionPreset = AVCaptureSessionPresetPhoto;
+    self.session.sessionPreset = AVCaptureSession.Preset(rawValue: convertFromAVCaptureSessionPreset(AVCaptureSession.Preset.photo));
   }
 }
 
@@ -91,13 +91,13 @@ func setDeviceById(_ id: String!) -> Bool {
     
 func start(_ file: String!) -> Bool {
     var started : Bool = false
-    if self.session.canAddInput(self.input) {
-        self.session.addInput(self.input)
+    if self.session.canAddInput(self.input!) {
+        self.session.addInput(self.input!)
         self.output = AVCaptureMovieFileOutput()
         if self.session.canAddOutput(self.output) {
             self.session.addOutput(self.output)
             self.session.startRunning()
-            self.output.startRecording(toOutputFileURL: URL(fileURLWithPath: file), recordingDelegate: self)
+            self.output.startRecording(to: URL(fileURLWithPath: file), recordingDelegate: self)
             started = true
         }
     }
@@ -109,19 +109,24 @@ func stop() {
     self.session.stopRunning()
 }
 
-func capture(_ captureOutput: AVCaptureFileOutput!,
-    didStartRecordingToOutputFileAt fileURL: URL!,
-    fromConnections connections: [Any]!) {
+func fileOutput(_ captureOutput: AVCaptureFileOutput,
+    didStartRecordingTo fileURL: URL,
+    from connections: [AVCaptureConnection]) {
     NSLog("captureOutput Started callback");
     self.started = true
 }
     
-func capture(_ captureOutput: AVCaptureFileOutput!,
-    didFinishRecordingToOutputFileAt outputFileURL: URL!,
-    fromConnections connections: [Any]!,
-    error: Error!) {
+func fileOutput(_ captureOutput: AVCaptureFileOutput,
+    didFinishRecordingTo outputFileURL: URL,
+    from connections: [AVCaptureConnection],
+    error: Error?) {
     NSLog("captureOutput Finished callback")
     self.finished = true
 }
 
 } // class Capture
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromAVCaptureSessionPreset(_ input: AVCaptureSession.Preset) -> String {
+	return input.rawValue
+}
